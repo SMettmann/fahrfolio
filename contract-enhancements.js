@@ -56,6 +56,10 @@
       .join('<br>');
     return [address, contact].filter(Boolean).join('<br>');
   }
+  function dealerBrand(dealer) {
+    if (dealer.logoData) return `<img src="${dealer.logoData}" alt="${plain(dealer.company, 'Händlerlogo')}">`;
+    return `<strong>${plain(dealer.company, 'Fahrfolio')}</strong>`;
+  }
 
   const originalOpenContract = openContract;
 
@@ -76,7 +80,7 @@
 
     preview.innerHTML = `
       <div class="contract-paper">
-        <div class="contract-brand"><img src="assets/fahrfolio-logo.svg" alt="Fahrfolio"><span>Vorschau Kaufvertrag</span></div>
+        <div class="contract-brand"><div class="dealer-contract-brand">${dealerBrand(dealer)}</div><span>Vorschau Kaufvertrag</span></div>
         <h3>Fahrzeug-Kaufvertrag</h3>
         <div class="contract-columns">
           <div><span>Verkäufer</span><strong class="${dealer.company ? '' : 'seller-missing'}">${plain(dealer.company, 'Händlerdaten noch nicht hinterlegt')}</strong><p>${sellerDetails || 'Unter „Händlerdaten“ einmalig eintragen.'}</p></div>
@@ -123,7 +127,7 @@
         </div>
 
         <div class="signature-preview"><div class="signature-line">Ort, Datum · Verkäufer</div><div class="signature-line">Ort, Datum · Käufer</div></div>
-        <p class="contract-hint">Prototyp: Rechtlich geprüfte Vertragsbedingungen, PDF-Erstellung, Dokumentenablage und digitale Unterschrift werden als nächste Schritte ergänzt.</p>
+        <p class="contract-hint">Prototyp: Vertragsbedingungen, Nachweisführung und der endgültige Signaturprozess werden vor dem Produktivbetrieb rechtlich geprüft.</p>
       </div>`;
   };
 
@@ -144,11 +148,25 @@
   });
   window.addEventListener('fahrfolio:dealer-profile-changed', updateContractPreview);
 
+  function ensureSignatureFlow(callback) {
+    if (typeof window.openFahrfolioSignatureFlow === 'function') return callback();
+    const existing = document.querySelector('script[data-fahrfolio-signature-flow]');
+    if (existing) {
+      existing.addEventListener('load', callback, { once: true });
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = 'signature-flow.js';
+    script.dataset.fahrfolioSignatureFlow = 'true';
+    script.addEventListener('load', callback, { once: true });
+    document.body.appendChild(script);
+  }
+
   const oldContinue = document.getElementById('continueContractBtn');
   const continueButton = oldContinue.cloneNode(true);
   oldContinue.replaceWith(continueButton);
   continueButton.addEventListener('click', () => {
-    showToast('Vertrag vorbereitet. Als Nächstes folgt die digitale Unterschrift.');
+    ensureSignatureFlow(() => window.openFahrfolioSignatureFlow());
   });
 
   // Der separate Bereich „Dokumente“ wurde bewusst entfernt.
@@ -162,6 +180,14 @@
     const script = document.createElement('script');
     script.src = 'dealer-profile.js';
     script.dataset.fahrfolioDealerProfile = 'true';
+    document.body.appendChild(script);
+  }
+
+  // Vorladen, damit Unterschrift und Händlerbranding auf dem Handy ohne Verzögerung bereitstehen.
+  if (!document.querySelector('script[data-fahrfolio-signature-flow]')) {
+    const script = document.createElement('script');
+    script.src = 'signature-flow.js';
+    script.dataset.fahrfolioSignatureFlow = 'true';
     document.body.appendChild(script);
   }
 })();

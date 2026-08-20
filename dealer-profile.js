@@ -1,5 +1,6 @@
 (() => {
   const DEALER_STORAGE_KEY = 'fahrfolio-dealer-profile-v1';
+  let currentLogoData = '';
 
   function loadDealerProfile() {
     try {
@@ -14,6 +15,30 @@
   function saveDealerProfile(profile) {
     localStorage.setItem(DEALER_STORAGE_KEY, JSON.stringify(profile));
     window.dispatchEvent(new CustomEvent('fahrfolio:dealer-profile-changed', { detail: profile }));
+  }
+
+  function compressImage(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = reject;
+      reader.onload = () => {
+        const img = new Image();
+        img.onerror = reject;
+        img.onload = () => {
+          const maxWidth = 900;
+          const maxHeight = 420;
+          const scale = Math.min(1, maxWidth / img.width, maxHeight / img.height);
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.max(1, Math.round(img.width * scale));
+          canvas.height = Math.max(1, Math.round(img.height * scale));
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          resolve(canvas.toDataURL('image/jpeg', 0.86));
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
   }
 
   window.getFahrfolioDealerProfile = loadDealerProfile;
@@ -38,14 +63,24 @@
     <div class="dealer-intro">
       <div>
         <p class="eyebrow">HÄNDLERDATEN</p>
-        <h2>Einmal eintragen. In Verträgen automatisch verwenden.</h2>
-        <p>Diese Angaben werden später als Verkäuferdaten in Kaufverträge, Angebote und weitere Dokumente übernommen.</p>
+        <h2>Einmal eintragen. Überall verwenden.</h2>
+        <p>Firmenangaben und Logo werden automatisch für Verkaufsschild, Kaufvertrag und spätere Dokumente übernommen.</p>
       </div>
       <span class="dealer-local-badge">Prototyp · nur lokal gespeichert</span>
     </div>
 
     <form id="dealerForm" class="dealer-card">
-      <div class="form-section-title"><strong>Unternehmen</strong><small>Die Angaben, die auf Dokumenten erscheinen sollen.</small></div>
+      <div class="form-section-title"><strong>Autohaus & Logo</strong><small>Das Logo erscheint später auf deinen Verkaufsunterlagen.</small></div>
+      <div class="dealer-logo-row">
+        <div class="dealer-logo-preview" id="dealerLogoPreview"><span>Noch kein Logo</span></div>
+        <div class="dealer-logo-controls">
+          <label class="dealer-logo-upload">Logo auswählen<input id="dealerLogoInput" type="file" accept="image/png,image/jpeg,image/webp" /></label>
+          <button type="button" class="ghost-btn" id="removeDealerLogo">Logo entfernen</button>
+          <small>PNG, JPG oder WebP. Das Bild wird automatisch verkleinert.</small>
+        </div>
+      </div>
+
+      <div class="form-section-title"><strong>Unternehmen</strong><small>Die Angaben, die auf Unterlagen erscheinen sollen.</small></div>
       <div class="form-grid two-cols dealer-grid">
         <label>Firmenname*<input name="company" required placeholder="z. B. Muster Automobile" /></label>
         <label>Inhaber / Ansprechpartner<input name="contactName" placeholder="z. B. Max Mustermann" /></label>
@@ -65,7 +100,7 @@
 
       <div class="dealer-privacy-note">
         <strong>Datenschutz im Prototyp</strong>
-        <span>Diese Daten bleiben aktuell ausschließlich in diesem Browser. Für echte Händlerdaten verwenden wir später das geschützte Fahrfolio-Backend.</span>
+        <span>Diese Daten und das Logo bleiben aktuell ausschließlich in diesem Browser. Echte Händler- und Kundendaten kommen später in das geschützte Fahrfolio-Backend.</span>
       </div>
 
       <div class="modal-actions dealer-actions">
@@ -75,20 +110,57 @@
   main.appendChild(dealerView);
 
   const dealerForm = document.getElementById('dealerForm');
+  const logoInput = document.getElementById('dealerLogoInput');
+  const logoPreview = document.getElementById('dealerLogoPreview');
+  const removeLogoButton = document.getElementById('removeDealerLogo');
   const topAction = document.getElementById('openVehicleModal');
+
+  function renderLogoPreview() {
+    logoPreview.innerHTML = currentLogoData
+      ? `<img src="${currentLogoData}" alt="Händlerlogo" />`
+      : '<span>Noch kein Logo</span>';
+    removeLogoButton.disabled = !currentLogoData;
+  }
 
   function fillDealerForm() {
     const profile = loadDealerProfile();
+    currentLogoData = profile.logoData || '';
     Object.entries(profile).forEach(([key, value]) => {
-      if (dealerForm.elements[key]) dealerForm.elements[key].value = value ?? '';
+      if (key !== 'logoData' && dealerForm.elements[key]) dealerForm.elements[key].value = value ?? '';
     });
+    renderLogoPreview();
   }
+
+  logoInput.addEventListener('change', async () => {
+    const file = logoInput.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      showToast('Bitte eine Bilddatei auswählen.');
+      logoInput.value = '';
+      return;
+    }
+    try {
+      currentLogoData = await compressImage(file);
+      renderLogoPreview();
+      showToast('Logo vorbereitet. Jetzt Händlerdaten speichern.');
+    } catch (error) {
+      console.error(error);
+      showToast('Logo konnte nicht verarbeitet werden.');
+    }
+  });
+
+  removeLogoButton.addEventListener('click', () => {
+    currentLogoData = '';
+    logoInput.value = '';
+    renderLogoPreview();
+  });
 
   dealerForm.addEventListener('submit', event => {
     event.preventDefault();
     const profile = Object.fromEntries(new FormData(dealerForm).entries());
+    profile.logoData = currentLogoData;
     saveDealerProfile(profile);
-    showToast('Händlerdaten wurden gespeichert.');
+    showToast('Händlerdaten und Logo wurden gespeichert.');
   });
 
   const originalSetView = setView;
