@@ -2,32 +2,41 @@
 
 **Einmal eintragen. Überall verwenden.**
 
-Fahrfolio ist eine bewusst einfache Händler-Software für kleine und freie Gebrauchtwagenhändler.
+Fahrfolio ist eine bewusst einfache Händler-Software für kleine und freie Gebrauchtwagenhändler. Ziel ist eine Bedienung, die ohne Schulung verständlich ist und doppelte Dateneingaben vermeidet.
 
-## Ziel von V1
+## Produktidee
 
-- Fahrzeugbestand zentral verwalten
-- Fahrzeugdaten nur einmal erfassen
-- Kunden später direkt mit Fahrzeugen verknüpfen
-- Verkaufsschilder automatisch erzeugen
-- Angebote automatisch vorausfüllen
-- Kaufverträge aus vorhandenen Fahrzeug- und Kundendaten erstellen
-- digitale Unterschrift und PDF-Ablage vorbereiten
+Ein Fahrzeug wird einmal angelegt. Dieselben Daten sollen anschließend für Fahrzeugakte, Verkaufsschild, Angebot, Kaufvertrag und spätere Dokumente wiederverwendet werden.
 
-## Aktueller Stand
+## Aktueller klickbarer Prototyp
 
-Der erste klickbare Prototyp enthält bereits:
+Bereits umgesetzt:
 
-- Fahrfolio-Branding
-- Dashboard mit Bestandskennzahlen
-- Fahrzeugübersicht mit Suche und Statusfilter
-- Fahrzeug anlegen
-- lokale Speicherung im Browser (`localStorage`)
-- responsive Oberfläche für Desktop und Smartphone
-- vorbereitete Bereiche für Kunden und Dokumente
+- Fahrfolio-Branding und responsive Oberfläche
+- Dashboard mit Bestand, Reservierungen, Verkäufen und Bestandswert
+- Fahrzeugdatenbank mit Suche und Statusfilter
+- Fahrzeuge neu anlegen und bearbeiten
+- Fahrzeugakte mit FIN, Kennzeichen, EZ, HU, Kilometerstand, PS/kW, Haltern, Farbe, Ein-/Verkaufspreis, Ausstattung und bekannten Mängeln
+- Status: im Bestand / reserviert / verkauft
+- Kundenverwaltung mit Kontaktdaten und Adresse
+- druckbares A4-Verkaufsschild aus vorhandenen Fahrzeugdaten
+- Kaufvertrag-Workflow: Fahrzeug + Käufer auswählen und vorhandene Daten automatisch in eine Vertragsvorschau übernehmen
+- lokale Speicherung im Browser für den Prototyp
 
-> Hinweis: Der aktuelle Prototyp speichert ausschließlich Testdaten lokal im Browser. Es gibt noch kein produktives Backend und es sollen noch keine echten Kundendaten verwendet werden.
+## Als Nächstes
 
-## Produktprinzip
+- vollständiger rechtlich geprüfter Kaufvertrag
+- digitale Unterschriften
+- PDF-Erzeugung und Dokumentenablage
+- Angebots-PDF
+- Fahrzeugbilder
+- produktives Backend, Login und getrennte Händlerkonten
+- später optional FIN/DAT-Schnittstelle
 
-Fahrfolio soll ohne Schulung verständlich sein. Jede Funktion muss einem Händler unmittelbar Arbeit abnehmen.
+## Sicherheit im Prototyp
+
+Der aktuelle Stand nutzt `localStorage` und ist ausschließlich für Testdaten gedacht. Es gibt noch kein produktives Backend. Bitte keine echten Kunden-, Zahlungs- oder Zugangsdaten eingeben.
+
+## Produktregel
+
+> Wenn eine alltägliche Funktion erklärt werden muss, ist sie noch nicht einfach genug gebaut.
