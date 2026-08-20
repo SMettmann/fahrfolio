@@ -8,6 +8,15 @@
   function selectedCustomer() {
     return customers.find(c => c.id === document.getElementById('contractCustomer').value);
   }
+  function dealerProfile() {
+    if (typeof window.getFahrfolioDealerProfile === 'function') return window.getFahrfolioDealerProfile();
+    try {
+      const saved = JSON.parse(localStorage.getItem('fahrfolio-dealer-profile-v1'));
+      return saved && typeof saved === 'object' ? saved : {};
+    } catch (error) {
+      return {};
+    }
+  }
   function localToday() {
     const now = new Date();
     const offset = now.getTimezoneOffset();
@@ -36,12 +45,24 @@
     const text = String(value ?? '').trim();
     return escapeHtml(text || fallback);
   }
+  function dealerLines(dealer) {
+    const address = [dealer.street, `${dealer.zip || ''} ${dealer.city || ''}`.trim()]
+      .filter(Boolean)
+      .map(value => plain(value, ''))
+      .join('<br>');
+    const contact = [dealer.contactName, dealer.phone, dealer.email]
+      .filter(Boolean)
+      .map(value => plain(value, ''))
+      .join('<br>');
+    return [address, contact].filter(Boolean).join('<br>');
+  }
 
   const originalOpenContract = openContract;
 
   updateContractPreview = function () {
     const vehicle = selectedVehicle();
     const customer = selectedCustomer();
+    const dealer = dealerProfile();
     const preview = document.getElementById('contractPreview');
     if (!vehicle) {
       preview.innerHTML = '<div class="contract-paper"><strong>Bitte zuerst ein Fahrzeug anlegen.</strong></div>';
@@ -51,13 +72,14 @@
     const price = Number(fields.contractPrice.value || vehicle.price || 0);
     const mileage = Number(fields.contractMileage.value || vehicle.mileage || 0);
     const contractDate = fields.contractDate.value ? formatDate(fields.contractDate.value) : '—';
+    const sellerDetails = dealerLines(dealer);
 
     preview.innerHTML = `
       <div class="contract-paper">
         <div class="contract-brand"><img src="assets/fahrfolio-logo.svg" alt="Fahrfolio"><span>Vorschau Kaufvertrag</span></div>
         <h3>Fahrzeug-Kaufvertrag</h3>
         <div class="contract-columns">
-          <div><span>Verkäufer</span><strong>Händlerdaten</strong><p>Werden später einmalig in Fahrfolio hinterlegt und hier automatisch eingesetzt.</p></div>
+          <div><span>Verkäufer</span><strong class="${dealer.company ? '' : 'seller-missing'}">${plain(dealer.company, 'Händlerdaten noch nicht hinterlegt')}</strong><p>${sellerDetails || 'Unter „Händlerdaten“ einmalig eintragen.'}</p></div>
           <div><span>Käufer</span><strong>${plain(customer ? fullName(customer) : 'Kunde auswählen')}</strong><p>${plain(customer?.street, '')}<br>${plain(`${customer?.zip || ''} ${customer?.city || ''}`.trim(), '')}${customer?.birthDate ? `<br>Geburtsdatum: ${plain(formatDate(customer.birthDate))}` : ''}</p></div>
         </div>
 
@@ -101,7 +123,7 @@
         </div>
 
         <div class="signature-preview"><div class="signature-line">Ort, Datum · Verkäufer</div><div class="signature-line">Ort, Datum · Käufer</div></div>
-        <p class="contract-hint">Prototyp: Händlerdaten, rechtlich geprüfte Vertragsbedingungen, PDF-Erstellung und digitale Unterschrift werden als nächste Schritte ergänzt.</p>
+        <p class="contract-hint">Prototyp: Rechtlich geprüfte Vertragsbedingungen, PDF-Erstellung, Dokumentenablage und digitale Unterschrift werden als nächste Schritte ergänzt.</p>
       </div>`;
   };
 
@@ -120,6 +142,7 @@
     field.addEventListener('input', updateContractPreview);
     field.addEventListener('change', updateContractPreview);
   });
+  window.addEventListener('fahrfolio:dealer-profile-changed', updateContractPreview);
 
   const oldContinue = document.getElementById('continueContractBtn');
   const continueButton = oldContinue.cloneNode(true);
@@ -127,4 +150,11 @@
   continueButton.addEventListener('click', () => {
     showToast('Vertrag vorbereitet. Als Nächstes folgt die digitale Unterschrift.');
   });
+
+  if (!document.querySelector('script[data-fahrfolio-dealer-profile]')) {
+    const script = document.createElement('script');
+    script.src = 'dealer-profile.js';
+    script.dataset.fahrfolioDealerProfile = 'true';
+    document.body.appendChild(script);
+  }
 })();
