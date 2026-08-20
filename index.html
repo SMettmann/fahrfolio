@@ -15,14 +15,12 @@
       <div class="brand-wrap">
         <img src="assets/fahrfolio-logo.svg" alt="Fahrfolio" class="brand-logo" />
       </div>
-
       <nav class="nav" aria-label="Hauptnavigation">
         <button class="nav-item active" data-view="dashboard"><span>⌂</span>Übersicht</button>
         <button class="nav-item" data-view="vehicles"><span>🚗</span>Fahrzeuge</button>
         <button class="nav-item" data-view="customers"><span>👤</span>Kunden</button>
         <button class="nav-item" data-view="documents"><span>📄</span>Dokumente</button>
       </nav>
-
       <div class="sidebar-foot">
         <span class="pill">V1 Prototyp</span>
         <p>Einmal eintragen.<br />Überall verwenden.</p>
@@ -31,10 +29,7 @@
 
     <main class="main">
       <header class="topbar">
-        <div>
-          <p class="eyebrow">FAHRFOLIO</p>
-          <h1 id="pageTitle">Übersicht</h1>
-        </div>
+        <div><p class="eyebrow">FAHRFOLIO</p><h1 id="pageTitle">Übersicht</h1></div>
         <button class="primary-btn" id="openVehicleModal">+ Fahrzeug anlegen</button>
       </header>
 
@@ -43,54 +38,44 @@
           <div>
             <span class="welcome-label">Guten Tag 👋</span>
             <h2>Dein Fahrzeugbestand auf einen Blick.</h2>
-            <p>Fahrzeug einmal erfassen und später für Angebot, Verkaufsschild und Kaufvertrag weiterverwenden.</p>
+            <p>Fahrzeug einmal erfassen und später für Verkaufsschild, Angebot und Kaufvertrag weiterverwenden.</p>
           </div>
           <button class="secondary-btn" data-jump="vehicles">Bestand öffnen →</button>
         </div>
-
         <div class="stats-grid">
           <article class="stat-card"><span>Im Bestand</span><strong id="statStock">0</strong><small>verkaufsbereit</small></article>
           <article class="stat-card"><span>Reserviert</span><strong id="statReserved">0</strong><small>aktuell geblockt</small></article>
           <article class="stat-card"><span>Verkauft</span><strong id="statSold">0</strong><small>abgeschlossen</small></article>
           <article class="stat-card"><span>Bestandswert</span><strong id="statValue">0 €</strong><small>Verkaufspreise</small></article>
         </div>
-
-        <div class="section-head">
-          <div><p class="eyebrow">ZU GUTER LETZT</p><h2>Aktuelle Fahrzeuge</h2></div>
-          <button class="text-btn" data-jump="vehicles">Alle anzeigen</button>
-        </div>
+        <div class="section-head"><div><p class="eyebrow">AKTUELL</p><h2>Fahrzeuge</h2></div><button class="text-btn" data-jump="vehicles">Alle anzeigen</button></div>
         <div id="dashboardVehicles" class="vehicle-grid compact-grid"></div>
       </section>
 
       <section id="vehiclesView" class="view">
         <div class="toolbar">
-          <div class="search-wrap">
-            <span>⌕</span>
-            <input id="vehicleSearch" type="search" placeholder="Marke, Modell, FIN oder Kennzeichen suchen …" />
-          </div>
+          <div class="search-wrap"><span>⌕</span><input id="vehicleSearch" type="search" placeholder="Marke, Modell, FIN oder Kennzeichen suchen …" /></div>
           <select id="statusFilter" aria-label="Status filtern">
-            <option value="all">Alle Status</option>
-            <option value="stock">Im Bestand</option>
-            <option value="reserved">Reserviert</option>
-            <option value="sold">Verkauft</option>
+            <option value="all">Alle Status</option><option value="stock">Im Bestand</option><option value="reserved">Reserviert</option><option value="sold">Verkauft</option>
           </select>
         </div>
         <div id="vehicleGrid" class="vehicle-grid"></div>
       </section>
 
       <section id="customersView" class="view">
-        <div class="empty-state">
-          <div class="empty-icon">👤</div>
-          <h2>Kundenverwaltung kommt als Nächstes.</h2>
-          <p>Kundendaten werden später einmal erfasst und direkt in Angebote und Kaufverträge übernommen.</p>
+        <div class="section-head customer-head">
+          <div><p class="eyebrow">KUNDEN</p><h2>Kundendaten einmal erfassen.</h2><p class="section-copy">Danach können sie direkt in Angebote und Kaufverträge übernommen werden.</p></div>
+          <button class="primary-btn" id="openCustomerModal">+ Kunde anlegen</button>
         </div>
+        <div class="toolbar"><div class="search-wrap"><span>⌕</span><input id="customerSearch" type="search" placeholder="Name, E-Mail oder Ort suchen …" /></div></div>
+        <div id="customerGrid" class="customer-grid"></div>
       </section>
 
       <section id="documentsView" class="view">
         <div class="document-options">
-          <article><div>🏷️</div><h3>Verkaufsschild</h3><p>Aus Fahrzeugdaten automatisch druckfertig erstellen.</p><span>Vorbereitet</span></article>
-          <article><div>📝</div><h3>Angebot</h3><p>Fahrzeug auswählen, Kundendaten ergänzen, PDF erzeugen.</p><span>Vorbereitet</span></article>
-          <article><div>✍️</div><h3>Kaufvertrag</h3><p>Fahrzeugdaten automatisch übernehmen und digital unterschreiben.</p><span>Vorbereitet</span></article>
+          <article class="document-card" data-document="sign"><div>🏷️</div><h3>Verkaufsschild</h3><p>Fahrzeug auswählen und aus den vorhandenen Daten druckfertig erstellen.</p><button class="secondary-btn">Erstellen</button></article>
+          <article class="document-card" data-document="offer"><div>📝</div><h3>Angebot</h3><p>Fahrzeug und Kunde auswählen. Die vorhandenen Daten werden automatisch übernommen.</p><button class="secondary-btn">Erstellen</button></article>
+          <article class="document-card" data-document="contract"><div>✍️</div><h3>Kaufvertrag</h3><p>Fahrzeug auswählen, Käufer zuordnen und Kaufvertrag automatisch vorausfüllen.</p><button class="primary-btn">Kaufvertrag starten</button></article>
         </div>
       </section>
     </main>
@@ -98,11 +83,9 @@
 
   <div class="modal-backdrop" id="vehicleModal" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="vehicleModalTitle">
-      <div class="modal-head">
-        <div><p class="eyebrow">NEUES FAHRZEUG</p><h2 id="vehicleModalTitle">Fahrzeug anlegen</h2></div>
-        <button class="icon-btn" id="closeVehicleModal" aria-label="Schließen">×</button>
-      </div>
+      <div class="modal-head"><div><p class="eyebrow">FAHRZEUGAKTE</p><h2 id="vehicleModalTitle">Fahrzeug anlegen</h2></div><button class="icon-btn" data-close="vehicleModal" aria-label="Schließen">×</button></div>
       <form id="vehicleForm">
+        <input type="hidden" name="id" />
         <div class="form-grid">
           <label>Marke*<input name="brand" required placeholder="z. B. Volkswagen" /></label>
           <label>Modell*<input name="model" required placeholder="z. B. Golf 1.5 TSI" /></label>
@@ -111,18 +94,55 @@
           <label>Erstzulassung<input name="firstRegistration" type="month" /></label>
           <label>Kilometerstand<input name="mileage" type="number" min="0" placeholder="48200" /></label>
           <label>Leistung (PS)<input name="hp" type="number" min="0" placeholder="150" /></label>
+          <label>Leistung (kW)<input name="kw" type="number" min="0" placeholder="110" /></label>
           <label>Kraftstoff<select name="fuel"><option>Benzin</option><option>Diesel</option><option>Hybrid</option><option>Elektro</option><option>LPG</option><option>Sonstige</option></select></label>
           <label>Getriebe<select name="transmission"><option>Automatik</option><option>Schaltgetriebe</option></select></label>
+          <label>HU bis<input name="inspection" type="month" /></label>
+          <label>Anzahl Halter<input name="owners" type="number" min="0" placeholder="2" /></label>
+          <label>Farbe<input name="color" placeholder="z. B. Deep Black" /></label>
+          <label>Einkaufspreis (€)<input name="purchasePrice" type="number" min="0" step="100" placeholder="16000" /></label>
           <label>Verkaufspreis (€)<input name="price" type="number" min="0" step="100" placeholder="19990" /></label>
           <label>Status<select name="status"><option value="stock">Im Bestand</option><option value="reserved">Reserviert</option><option value="sold">Verkauft</option></select></label>
-          <label>Farbe<input name="color" placeholder="z. B. Deep Black" /></label>
         </div>
-        <label class="full-field">Notizen / bekannte Mängel<textarea name="notes" rows="3" placeholder="Interne Notizen zum Fahrzeug …"></textarea></label>
-        <div class="modal-actions">
-          <button type="button" class="secondary-btn" id="cancelVehicleModal">Abbrechen</button>
-          <button type="submit" class="primary-btn">Fahrzeug speichern</button>
-        </div>
+        <label class="full-field">Ausstattung<textarea name="equipment" rows="3" placeholder="Navigation, LED, Sitzheizung, ACC …"></textarea></label>
+        <label class="full-field">Bekannte Mängel / Schäden<textarea name="notes" rows="3" placeholder="Bekannte Mängel transparent dokumentieren …"></textarea></label>
+        <div class="modal-actions"><button type="button" class="secondary-btn" data-close="vehicleModal">Abbrechen</button><button type="submit" class="primary-btn">Fahrzeug speichern</button></div>
       </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="vehicleDetailModal" aria-hidden="true">
+    <div class="modal detail-modal" role="dialog" aria-modal="true">
+      <div class="modal-head"><div><p class="eyebrow">FAHRZEUGAKTE</p><h2 id="detailVehicleTitle">Fahrzeug</h2></div><button class="icon-btn" data-close="vehicleDetailModal" aria-label="Schließen">×</button></div>
+      <div id="vehicleDetailContent"></div>
+      <div class="modal-actions detail-actions"><button class="secondary-btn" id="editVehicleBtn">Bearbeiten</button><button class="secondary-btn" id="detailSignBtn">Verkaufsschild</button><button class="primary-btn" id="detailContractBtn">Kaufvertrag erstellen</button></div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="customerModal" aria-hidden="true">
+    <div class="modal small-modal" role="dialog" aria-modal="true">
+      <div class="modal-head"><div><p class="eyebrow">KUNDENAKTE</p><h2>Kunde anlegen</h2></div><button class="icon-btn" data-close="customerModal" aria-label="Schließen">×</button></div>
+      <form id="customerForm">
+        <div class="form-grid two-cols">
+          <label>Vorname*<input name="firstName" required /></label><label>Nachname*<input name="lastName" required /></label>
+          <label>Straße / Hausnummer<input name="street" /></label><label>PLZ<input name="zip" /></label>
+          <label>Ort<input name="city" /></label><label>Telefon<input name="phone" type="tel" /></label>
+          <label>E-Mail<input name="email" type="email" /></label><label>Geburtsdatum<input name="birthDate" type="date" /></label>
+        </div>
+        <div class="modal-actions"><button type="button" class="secondary-btn" data-close="customerModal">Abbrechen</button><button type="submit" class="primary-btn">Kunde speichern</button></div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="contractModal" aria-hidden="true">
+    <div class="modal contract-modal" role="dialog" aria-modal="true">
+      <div class="modal-head"><div><p class="eyebrow">KAUFVERTRAG</p><h2>Kaufvertrag vorbereiten</h2></div><button class="icon-btn" data-close="contractModal" aria-label="Schließen">×</button></div>
+      <div class="workflow-note"><strong>Der Fahrfolio-Vorteil:</strong> Fahrzeug und Käufer auswählen – vorhandene Daten werden automatisch übernommen.</div>
+      <div class="form-grid two-cols contract-selects">
+        <label>Fahrzeug<select id="contractVehicle"></select></label><label>Käufer<select id="contractCustomer"></select></label>
+      </div>
+      <div id="contractPreview" class="contract-preview"></div>
+      <div class="modal-actions"><button type="button" class="secondary-btn" data-close="contractModal">Abbrechen</button><button type="button" class="primary-btn" id="continueContractBtn">Weiter zur Unterschrift →</button></div>
     </div>
   </div>
 
@@ -131,15 +151,14 @@
       <div class="vehicle-visual"><span class="car-symbol">🚘</span><span class="status-badge"></span></div>
       <div class="vehicle-body">
         <div class="vehicle-title-row"><div><p class="vehicle-brand"></p><h3 class="vehicle-model"></h3></div><strong class="vehicle-price"></strong></div>
-        <div class="vehicle-meta"></div>
-        <div class="vehicle-id"></div>
-        <div class="vehicle-actions">
-          <button class="secondary-btn action-open">Öffnen</button>
-          <button class="ghost-btn action-sign">Verkaufsschild</button>
-          <button class="ghost-btn action-contract">Kaufvertrag</button>
-        </div>
+        <div class="vehicle-meta"></div><div class="vehicle-id"></div>
+        <div class="vehicle-actions"><button class="secondary-btn action-open">Öffnen</button><button class="ghost-btn action-sign">Verkaufsschild</button><button class="ghost-btn action-contract">Kaufvertrag</button></div>
       </div>
     </article>
+  </template>
+
+  <template id="customerCardTemplate">
+    <article class="customer-card"><div class="avatar"></div><div><h3 class="customer-name"></h3><p class="customer-address"></p><p class="customer-contact"></p></div><button class="ghost-btn customer-contract">Kaufvertrag</button></article>
   </template>
 
   <div id="toast" class="toast" role="status"></div>
