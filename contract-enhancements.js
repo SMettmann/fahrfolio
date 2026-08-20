@@ -1,0 +1,130 @@
+(() => {
+  const ids = ['contractPrice','contractMileage','contractDate','contractPayment','contractKeys','contractAccident','contractDefects','contractAccessories','contractAgreements'];
+  const fields = Object.fromEntries(ids.map(id => [id, document.getElementById(id)]));
+
+  function selectedVehicle() {
+    return vehicles.find(v => v.id === document.getElementById('contractVehicle').value);
+  }
+  function selectedCustomer() {
+    return customers.find(c => c.id === document.getElementById('contractCustomer').value);
+  }
+  function localToday() {
+    const now = new Date();
+    const offset = now.getTimezoneOffset();
+    return new Date(now.getTime() - offset * 60000).toISOString().slice(0, 10);
+  }
+  function seedContractFields(vehicle) {
+    if (!vehicle) return;
+    fields.contractPrice.value = Number(vehicle.price || 0);
+    fields.contractMileage.value = Number(vehicle.mileage || 0);
+    fields.contractDate.value = localToday();
+    fields.contractPayment.value = 'Überweisung';
+    fields.contractKeys.value = 2;
+    fields.contractAccident.value = 'unknown';
+    fields.contractDefects.value = vehicle.notes || '';
+    fields.contractAccessories.value = '';
+    fields.contractAgreements.value = '';
+  }
+  function accidentText(value) {
+    return {
+      unknown: 'Keine Angabe hinterlegt',
+      'accident-free': 'Laut Angaben unfallfrei',
+      accident: 'Unfallschaden bekannt'
+    }[value] || 'Keine Angabe hinterlegt';
+  }
+  function plain(value, fallback = '—') {
+    const text = String(value ?? '').trim();
+    return escapeHtml(text || fallback);
+  }
+
+  const originalOpenContract = openContract;
+
+  updateContractPreview = function () {
+    const vehicle = selectedVehicle();
+    const customer = selectedCustomer();
+    const preview = document.getElementById('contractPreview');
+    if (!vehicle) {
+      preview.innerHTML = '<div class="contract-paper"><strong>Bitte zuerst ein Fahrzeug anlegen.</strong></div>';
+      return;
+    }
+
+    const price = Number(fields.contractPrice.value || vehicle.price || 0);
+    const mileage = Number(fields.contractMileage.value || vehicle.mileage || 0);
+    const contractDate = fields.contractDate.value ? formatDate(fields.contractDate.value) : '—';
+
+    preview.innerHTML = `
+      <div class="contract-paper">
+        <div class="contract-brand"><img src="assets/fahrfolio-logo.svg" alt="Fahrfolio"><span>Vorschau Kaufvertrag</span></div>
+        <h3>Fahrzeug-Kaufvertrag</h3>
+        <div class="contract-columns">
+          <div><span>Verkäufer</span><strong>Händlerdaten</strong><p>Werden später einmalig in Fahrfolio hinterlegt und hier automatisch eingesetzt.</p></div>
+          <div><span>Käufer</span><strong>${plain(customer ? fullName(customer) : 'Kunde auswählen')}</strong><p>${plain(customer?.street, '')}<br>${plain(`${customer?.zip || ''} ${customer?.city || ''}`.trim(), '')}${customer?.birthDate ? `<br>Geburtsdatum: ${plain(formatDate(customer.birthDate))}` : ''}</p></div>
+        </div>
+
+        <div class="contract-section">
+          <div class="contract-section-title">Fahrzeug</div>
+          <div class="contract-list">
+            <div><span>Fahrzeug</span><strong>${plain(`${vehicle.brand} ${vehicle.model}`)}</strong></div>
+            <div><span>FIN (Fahrgestellnummer)</span><strong>${plain(vehicle.vin)}</strong></div>
+            <div><span>Erstzulassung</span><strong>${plain(formatMonth(vehicle.firstRegistration))}</strong></div>
+            <div><span>Kennzeichen</span><strong>${plain(vehicle.plate)}</strong></div>
+            <div><span>Kilometerstand bei Übergabe</span><strong>${formatNumber(mileage)} km</strong></div>
+            <div><span>Leistung</span><strong>${plain(vehicle.hp || '—')} PS / ${plain(vehicle.kw || '—')} kW</strong></div>
+            <div><span>Kraftstoff</span><strong>${plain(vehicle.fuel)}</strong></div>
+            <div><span>Getriebe</span><strong>${plain(vehicle.transmission)}</strong></div>
+          </div>
+        </div>
+
+        <div class="contract-section">
+          <div class="contract-section-title">Verkauf</div>
+          <div class="contract-list">
+            <div><span>Kaufpreis</span><strong>${formatCurrency(price)}</strong></div>
+            <div><span>Übergabedatum</span><strong>${plain(contractDate)}</strong></div>
+            <div><span>Zahlungsart</span><strong>${plain(fields.contractPayment.value)}</strong></div>
+            <div><span>Anzahl Schlüssel</span><strong>${plain(fields.contractKeys.value)}</strong></div>
+            <div><span>Unfallangabe</span><strong>${plain(accidentText(fields.contractAccident.value))}</strong></div>
+            <div><span>HU gültig bis</span><strong>${plain(formatMonth(vehicle.inspection))}</strong></div>
+          </div>
+        </div>
+
+        <div class="contract-section">
+          <div class="contract-section-title">Bekannte Mängel / Schäden</div>
+          <div class="contract-note-box">${plain(fields.contractDefects.value, 'Keine Angaben hinterlegt.')}</div>
+        </div>
+        <div class="contract-section">
+          <div class="contract-section-title">Mitverkauftes Zubehör</div>
+          <div class="contract-note-box">${plain(fields.contractAccessories.value, 'Kein zusätzliches Zubehör eingetragen.')}</div>
+        </div>
+        <div class="contract-section">
+          <div class="contract-section-title">Weitere Vereinbarungen</div>
+          <div class="contract-note-box">${plain(fields.contractAgreements.value, 'Keine zusätzlichen Vereinbarungen eingetragen.')}</div>
+        </div>
+
+        <div class="signature-preview"><div class="signature-line">Ort, Datum · Verkäufer</div><div class="signature-line">Ort, Datum · Käufer</div></div>
+        <p class="contract-hint">Prototyp: Händlerdaten, rechtlich geprüfte Vertragsbedingungen, PDF-Erstellung und digitale Unterschrift werden als nächste Schritte ergänzt.</p>
+      </div>`;
+  };
+
+  openContract = function (vehicleId = null, customerId = null) {
+    originalOpenContract(vehicleId, customerId);
+    seedContractFields(selectedVehicle());
+    updateContractPreview();
+  };
+
+  document.getElementById('contractVehicle').addEventListener('change', () => {
+    seedContractFields(selectedVehicle());
+    updateContractPreview();
+  });
+  document.getElementById('contractCustomer').addEventListener('change', updateContractPreview);
+  Object.values(fields).forEach(field => {
+    field.addEventListener('input', updateContractPreview);
+    field.addEventListener('change', updateContractPreview);
+  });
+
+  const oldContinue = document.getElementById('continueContractBtn');
+  const continueButton = oldContinue.cloneNode(true);
+  oldContinue.replaceWith(continueButton);
+  continueButton.addEventListener('click', () => {
+    showToast('Vertrag vorbereitet. Als Nächstes folgt die digitale Unterschrift.');
+  });
+})();
