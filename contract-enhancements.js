@@ -151,6 +151,13 @@
     showToast('Vertrag vorbereitet. Als Nächstes folgt die digitale Unterschrift.');
   });
 
+  // Der separate Bereich „Dokumente“ wurde bewusst entfernt.
+  // Verkaufsschild und Kaufvertrag werden direkt am jeweiligen Fahrzeug gestartet.
+  const documentsNav = document.querySelector('.nav-item[data-view="documents"]');
+  if (documentsNav) documentsNav.remove();
+  const documentsView = document.getElementById('documentsView');
+  if (documentsView) documentsView.remove();
+
   if (!document.querySelector('script[data-fahrfolio-dealer-profile]')) {
     const script = document.createElement('script');
     script.src = 'dealer-profile.js';
