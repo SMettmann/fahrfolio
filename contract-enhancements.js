@@ -1,5 +1,34 @@
 (() => {
-  const ids = ['contractPrice','contractMileage','contractDate','contractPayment','contractKeys','contractAccident','contractDefects','contractAccessories','contractAgreements'];
+  function injectContractExtras() {
+    const detailsGrid = document.querySelector('.contract-details-grid');
+    if (detailsGrid && !document.getElementById('contractPlace')) {
+      detailsGrid.insertAdjacentHTML('beforeend', `
+        <label>Vertragsort<input id="contractPlace" placeholder="z. B. Heidenheim" /></label>
+        <label>Zahlungsstatus<select id="contractPaymentStatus"><option value="open">Noch offen</option><option value="deposit">Anzahlung erhalten</option><option value="paid">Vollständig bezahlt</option></select></label>`);
+    }
+
+    const defectsLabel = document.getElementById('contractDefects')?.closest('label');
+    if (defectsLabel && !document.getElementById('contractHandoverDocs')) {
+      defectsLabel.insertAdjacentHTML('beforebegin', `
+        <div class="contract-handover-box" id="contractHandoverDocs">
+          <div class="contract-handover-title"><strong>Unterlagen bei Übergabe</strong><span>Nur markieren, was tatsächlich übergeben wird.</span></div>
+          <div class="contract-check-grid">
+            <label><input type="checkbox" id="contractDocPartI" /> Zulassungsbescheinigung Teil I</label>
+            <label><input type="checkbox" id="contractDocPartII" /> Zulassungsbescheinigung Teil II</label>
+            <label><input type="checkbox" id="contractHuReport" /> HU-Bericht</label>
+            <label><input type="checkbox" id="contractCoc" /> COC / Übereinstimmungsbescheinigung</label>
+          </div>
+        </div>`);
+    }
+  }
+
+  injectContractExtras();
+
+  const ids = [
+    'contractPrice','contractMileage','contractDate','contractPayment','contractKeys','contractAccident',
+    'contractPlace','contractPaymentStatus','contractDocPartI','contractDocPartII','contractHuReport','contractCoc',
+    'contractDefects','contractAccessories','contractAgreements'
+  ];
   const fields = Object.fromEntries(ids.map(id => [id, document.getElementById(id)]));
 
   function selectedVehicle() {
@@ -24,12 +53,19 @@
   }
   function seedContractFields(vehicle) {
     if (!vehicle) return;
+    const dealer = dealerProfile();
     fields.contractPrice.value = Number(vehicle.price || 0);
     fields.contractMileage.value = Number(vehicle.mileage || 0);
     fields.contractDate.value = localToday();
     fields.contractPayment.value = 'Überweisung';
     fields.contractKeys.value = 2;
     fields.contractAccident.value = 'unknown';
+    fields.contractPlace.value = dealer.city || '';
+    fields.contractPaymentStatus.value = 'open';
+    fields.contractDocPartI.checked = false;
+    fields.contractDocPartII.checked = false;
+    fields.contractHuReport.checked = false;
+    fields.contractCoc.checked = false;
     fields.contractDefects.value = vehicle.notes || '';
     fields.contractAccessories.value = '';
     fields.contractAgreements.value = '';
@@ -40,6 +76,21 @@
       'accident-free': 'Laut Angaben unfallfrei',
       accident: 'Unfallschaden bekannt'
     }[value] || 'Keine Angabe hinterlegt';
+  }
+  function paymentStatusText(value) {
+    return {
+      open: 'Noch offen',
+      deposit: 'Anzahlung erhalten',
+      paid: 'Vollständig bezahlt'
+    }[value] || 'Noch offen';
+  }
+  function handoverDocuments() {
+    return [
+      fields.contractDocPartI.checked ? 'Zulassungsbescheinigung Teil I' : null,
+      fields.contractDocPartII.checked ? 'Zulassungsbescheinigung Teil II' : null,
+      fields.contractHuReport.checked ? 'HU-Bericht' : null,
+      fields.contractCoc.checked ? 'COC / Übereinstimmungsbescheinigung' : null
+    ].filter(Boolean);
   }
   function plain(value, fallback = '—') {
     const text = String(value ?? '').trim();
@@ -55,6 +106,16 @@
       .map(value => plain(value, ''))
       .join('<br>');
     return [address, contact].filter(Boolean).join('<br>');
+  }
+  function customerLines(customer) {
+    if (!customer) return '';
+    const address = [customer.street, `${customer.zip || ''} ${customer.city || ''}`.trim()].filter(Boolean);
+    const details = [
+      customer.birthDate ? `Geburtsdatum: ${formatDate(customer.birthDate)}` : '',
+      customer.phone ? `Telefon: ${customer.phone}` : '',
+      customer.email ? `E-Mail: ${customer.email}` : ''
+    ].filter(Boolean);
+    return [...address, ...details].map(value => plain(value, '')).join('<br>');
   }
   function dealerBrand(dealer) {
     if (dealer.logoData) return `<img src="${dealer.logoData}" alt="${plain(dealer.company, 'Händlerlogo')}">`;
@@ -77,14 +138,16 @@
     const mileage = Number(fields.contractMileage.value || vehicle.mileage || 0);
     const contractDate = fields.contractDate.value ? formatDate(fields.contractDate.value) : '—';
     const sellerDetails = dealerLines(dealer);
+    const buyerDetails = customerLines(customer);
+    const documents = handoverDocuments();
 
     preview.innerHTML = `
       <div class="contract-paper">
-        <div class="contract-brand"><div class="dealer-contract-brand">${dealerBrand(dealer)}</div><span>Vorschau Kaufvertrag</span></div>
+        <div class="contract-brand"><div class="dealer-contract-brand">${dealerBrand(dealer)}</div><span>Kaufvertrag · Vorschau</span></div>
         <h3>Fahrzeug-Kaufvertrag</h3>
         <div class="contract-columns">
           <div><span>Verkäufer</span><strong class="${dealer.company ? '' : 'seller-missing'}">${plain(dealer.company, 'Händlerdaten noch nicht hinterlegt')}</strong><p>${sellerDetails || 'Unter „Händlerdaten“ einmalig eintragen.'}</p></div>
-          <div><span>Käufer</span><strong>${plain(customer ? fullName(customer) : 'Kunde auswählen')}</strong><p>${plain(customer?.street, '')}<br>${plain(`${customer?.zip || ''} ${customer?.city || ''}`.trim(), '')}${customer?.birthDate ? `<br>Geburtsdatum: ${plain(formatDate(customer.birthDate))}` : ''}</p></div>
+          <div><span>Käufer</span><strong>${plain(customer ? fullName(customer) : 'Kunde auswählen')}</strong><p>${buyerDetails || 'Käuferdaten auswählen.'}</p></div>
         </div>
 
         <div class="contract-section">
@@ -102,17 +165,23 @@
         </div>
 
         <div class="contract-section">
-          <div class="contract-section-title">Verkauf</div>
+          <div class="contract-section-title">Verkauf & Übergabe</div>
           <div class="contract-list">
             <div><span>Kaufpreis</span><strong>${formatCurrency(price)}</strong></div>
             <div><span>Übergabedatum</span><strong>${plain(contractDate)}</strong></div>
+            <div><span>Vertragsort</span><strong>${plain(fields.contractPlace.value)}</strong></div>
             <div><span>Zahlungsart</span><strong>${plain(fields.contractPayment.value)}</strong></div>
+            <div><span>Zahlungsstatus</span><strong>${plain(paymentStatusText(fields.contractPaymentStatus.value))}</strong></div>
             <div><span>Anzahl Schlüssel</span><strong>${plain(fields.contractKeys.value)}</strong></div>
             <div><span>Unfallangabe</span><strong>${plain(accidentText(fields.contractAccident.value))}</strong></div>
             <div><span>HU gültig bis</span><strong>${plain(formatMonth(vehicle.inspection))}</strong></div>
           </div>
         </div>
 
+        <div class="contract-section">
+          <div class="contract-section-title">Übergebene Unterlagen</div>
+          <div class="contract-note-box">${documents.length ? documents.map(item => `✓ ${plain(item)}`).join('<br>') : 'Noch keine Unterlagen als übergeben markiert.'}</div>
+        </div>
         <div class="contract-section">
           <div class="contract-section-title">Bekannte Mängel / Schäden</div>
           <div class="contract-note-box">${plain(fields.contractDefects.value, 'Keine Angaben hinterlegt.')}</div>
@@ -126,8 +195,8 @@
           <div class="contract-note-box">${plain(fields.contractAgreements.value, 'Keine zusätzlichen Vereinbarungen eingetragen.')}</div>
         </div>
 
+        <div class="contract-confirmation">Die oben erfassten Angaben bilden den dokumentierten Stand des Verkaufs im Fahrfolio-Prototyp. Finale Vertragsbedingungen und gesetzlich erforderliche Klauseln werden vor dem Produktivbetrieb rechtlich geprüft.</div>
         <div class="signature-preview"><div class="signature-line">Ort, Datum · Verkäufer</div><div class="signature-line">Ort, Datum · Käufer</div></div>
-        <p class="contract-hint">Prototyp: Vertragsbedingungen, Nachweisführung und der endgültige Signaturprozess werden vor dem Produktivbetrieb rechtlich geprüft.</p>
       </div>`;
   };
 
@@ -142,7 +211,7 @@
     updateContractPreview();
   });
   document.getElementById('contractCustomer').addEventListener('change', updateContractPreview);
-  Object.values(fields).forEach(field => {
+  Object.values(fields).filter(Boolean).forEach(field => {
     field.addEventListener('input', updateContractPreview);
     field.addEventListener('change', updateContractPreview);
   });
@@ -169,8 +238,6 @@
     ensureSignatureFlow(() => window.openFahrfolioSignatureFlow());
   });
 
-  // Der separate Bereich „Dokumente“ wurde bewusst entfernt.
-  // Verkaufsschild und Kaufvertrag werden direkt am jeweiligen Fahrzeug gestartet.
   const documentsNav = document.querySelector('.nav-item[data-view="documents"]');
   if (documentsNav) documentsNav.remove();
   const documentsView = document.getElementById('documentsView');
@@ -183,7 +250,6 @@
     document.body.appendChild(script);
   }
 
-  // Vorladen, damit Unterschrift und Händlerbranding auf dem Handy ohne Verzögerung bereitstehen.
   if (!document.querySelector('script[data-fahrfolio-signature-flow]')) {
     const script = document.createElement('script');
     script.src = 'signature-flow.js';
