@@ -182,4 +182,11 @@
 
   dealerButton.addEventListener('click', () => setView('dealer'));
   fillDealerForm();
+
+  if (!document.querySelector('script[data-fahrfolio-offer-flow]')) {
+    const script = document.createElement('script');
+    script.src = 'offer-flow.js';
+    script.dataset.fahrfolioOfferFlow = 'true';
+    document.body.appendChild(script);
+  }
 })();
