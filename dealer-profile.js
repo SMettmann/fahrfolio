@@ -221,4 +221,11 @@
     script.dataset.fahrfolioPurchaseFlow = 'true';
     document.body.appendChild(script);
   }
+
+  if (!document.querySelector('script[data-fahrfolio-archive-flow]')) {
+    const script = document.createElement('script');
+    script.src = 'archive-flow.js';
+    script.dataset.fahrfolioArchiveFlow = 'true';
+    document.body.appendChild(script);
+  }
 })();
