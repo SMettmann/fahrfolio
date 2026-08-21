@@ -183,6 +183,24 @@
   dealerButton.addEventListener('click', () => setView('dealer'));
   fillDealerForm();
 
+  // Fahrzeug bearbeiten darf nicht versehentlich durch Hintergrundklick oder Escape schließen.
+  const vehicleEditModal = document.getElementById('vehicleModal');
+  if (vehicleEditModal) {
+    vehicleEditModal.addEventListener('click', event => {
+      if (event.target === vehicleEditModal) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      }
+    }, true);
+
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && vehicleEditModal.classList.contains('open')) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      }
+    }, true);
+  }
+
   if (!document.querySelector('script[data-fahrfolio-offer-flow]')) {
     const script = document.createElement('script');
     script.src = 'offer-flow.js';
