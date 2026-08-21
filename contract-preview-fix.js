@@ -55,7 +55,10 @@
       request.onerror = () => resolve(null);
       request.onupgradeneeded = () => {
         const db = request.result;
-        if (!db.objectStoreNames.contains(DAMAGE_STORE)) db.createObjectStore(DAMAGE_STORE, { keyPath: 'id' });
+        const store = db.objectStoreNames.contains(DAMAGE_STORE)
+          ? request.transaction.objectStore(DAMAGE_STORE)
+          : db.createObjectStore(DAMAGE_STORE, { keyPath: 'id' });
+        if (!store.indexNames.contains('damageId')) store.createIndex('damageId', 'damageId', { unique: false });
       };
       request.onsuccess = () => {
         const db = request.result;
