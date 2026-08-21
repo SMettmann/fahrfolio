@@ -147,4 +147,11 @@
   printSalesSign = function(vehicleId) {
     openConfigurator(vehicleId);
   };
+
+  if (!document.querySelector('script[data-fahrfolio-vehicle-photos]')) {
+    const script = document.createElement('script');
+    script.src = 'vehicle-photos.js';
+    script.dataset.fahrfolioVehiclePhotos = 'true';
+    document.body.appendChild(script);
+  }
 })();
