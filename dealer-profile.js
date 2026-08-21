@@ -214,4 +214,11 @@
     script.dataset.fahrfolioSalesSign = 'true';
     document.body.appendChild(script);
   }
+
+  if (!document.querySelector('script[data-fahrfolio-purchase-flow]')) {
+    const script = document.createElement('script');
+    script.src = 'purchase-flow.js';
+    script.dataset.fahrfolioPurchaseFlow = 'true';
+    document.body.appendChild(script);
+  }
 })();
