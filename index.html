@@ -40,6 +40,6 @@
 
   <template id="vehicleCardTemplate"><article class="vehicle-card"><div class="vehicle-visual"><span class="car-symbol">🚘</span><span class="status-badge"></span></div><div class="vehicle-body"><div class="vehicle-title-row"><div><p class="vehicle-brand"></p><h3 class="vehicle-model"></h3></div><strong class="vehicle-price"></strong></div><div class="vehicle-meta"></div><div class="vehicle-id"></div><div class="vehicle-actions"><button class="secondary-btn action-open">Öffnen</button><button class="ghost-btn action-sign">Verkaufsschild</button><button class="ghost-btn action-contract">Kaufvertrag</button></div></div></article></template>
   <template id="customerCardTemplate"><article class="customer-card"><div class="avatar"></div><div><h3 class="customer-name"></h3><p class="customer-address"></p><p class="customer-contact"></p></div><button class="ghost-btn customer-contract">Kaufvertrag</button></article></template>
-  <div id="toast" class="toast" role="status"></div><script src="app.js"></script><script src="contract-enhancements.js"></script>
+  <div id="toast" class="toast" role="status"></div><script src="app.js"></script><script src="contract-enhancements.js"></script><script src="damage-documentation.js"></script><script>const fahrfolioDamagePrinter=window.openFahrfolioSignedContract;const fahrfolioDamagePrinterTimer=setInterval(()=>{if(document.getElementById('finishSignatureBtn')){window.openFahrfolioSignedContract=fahrfolioDamagePrinter;clearInterval(fahrfolioDamagePrinterTimer);}},250);</script>
 </body>
 </html>
