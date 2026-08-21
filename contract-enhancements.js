@@ -256,4 +256,11 @@
     script.dataset.fahrfolioSignatureFlow = 'true';
     document.body.appendChild(script);
   }
+
+  if (!document.querySelector('script[data-fahrfolio-sold-vehicle]')) {
+    const script = document.createElement('script');
+    script.src = 'sold-vehicle-enhancements.js';
+    script.dataset.fahrfolioSoldVehicle = 'true';
+    document.body.appendChild(script);
+  }
 })();
