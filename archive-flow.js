@@ -108,6 +108,19 @@
   const typeSelect = document.getElementById('archiveType');
   const archiveList = document.getElementById('archiveList');
 
+  function openPurchaseFromExistingView(id) {
+    const purchaseNav = document.querySelector('.nav-item[data-view="purchase"]');
+    if (!purchaseNav) return false;
+    purchaseNav.click();
+    setTimeout(() => {
+      const card = Array.from(document.querySelectorAll('[data-purchase-id]')).find(element => element.dataset.purchaseId === id);
+      const button = card?.querySelector('.purchase-open-contract');
+      if (button) button.click();
+      else showToast('Der Ankaufsvertrag ist gespeichert. Öffne ihn im Bereich „Ankauf“.');
+    }, 0);
+    return true;
+  }
+
   function openEntry(type, id) {
     if (type === 'contract') {
       const item = contracts().find(entry => entry.id === id);
@@ -120,6 +133,7 @@
     if (type === 'purchase') {
       const item = purchases().find(entry => entry.id === id);
       if (item && typeof window.openFahrfolioPurchaseDocument === 'function') return window.openFahrfolioPurchaseDocument(item);
+      if (item && openPurchaseFromExistingView(id)) return;
     }
     showToast('Dieser Vorgang kann gerade nicht geöffnet werden.');
   }
@@ -159,12 +173,18 @@
     setView('archive');
     renderArchive();
     const topAction = document.getElementById('openVehicleModal');
-    if (topAction) topAction.hidden = true;
+    if (topAction) {
+      topAction.hidden = true;
+      topAction.style.visibility = 'hidden';
+    }
   });
 
   document.querySelectorAll('.nav-item:not([data-view="archive"]):not([data-view="purchase"])').forEach(button => button.addEventListener('click', () => {
     const topAction = document.getElementById('openVehicleModal');
-    if (topAction && button.dataset.view !== 'dealer') topAction.hidden = false;
+    if (topAction && button.dataset.view !== 'dealer') {
+      topAction.hidden = false;
+      topAction.style.visibility = '';
+    }
   }));
 
   function vehicleEvents(vehicle) {
